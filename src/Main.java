@@ -17,6 +17,7 @@ public class Main
         Map<Integer, List<Tree>> trees = new HashMap<>();
 
         Tree previousRoot = new Tree(1, new Node(null, null, null, 1), true);
+        previousRoot.getLeafs().add(previousRoot.getRoot());
         trees.put(1, Collections.singletonList(previousRoot));
 
         for (int i = 1; i < listCount; i++)
@@ -25,40 +26,31 @@ public class Main
             List<Tree> resultTrees = new ArrayList<>();
             for (Tree tree : currentTrees)
             {
-                Tree currentRoot = tree.copy();
+                List<Node> leafs = tree.getLeafs();
+                for (int k = 0; k < leafs.size(); k++)
+                {
+                    Tree currentTree = tree.copy();
+                    Node node = currentTree.getLeafs().get(k);
+//                    Node node = currentTree.getEqualsNode(currentTree.getRoot(), leaf);
+                    currentTree.getLeafs().remove(node);
 
-                Node currentNode = currentRoot.getRoot();
-                tryBuildRespectfulTree(currentRoot, currentNode, resultTrees);
+                    node.setSon(new Node(node, null, null, 1));
+                    node.setDaughter(new Node(node, null, null, 1));
+                    node.getSon().setParent(node);
+                    node.getDaughter().setParent(node);
+                    node.incrementLeafCount(node);
+                    currentTree.incrementNodeCount(1);
+                    currentTree.setRespectful(isRespectfulTree(currentTree, node));
+                    currentTree.getLeafs().addAll(
+                            Arrays.asList(node.getSon(), node.getDaughter()));
+                    resultTrees.add(currentTree);
+                }
             }
             trees.put(i + 1, resultTrees);
         }
 
 
         return trees;
-    }
-
-    private static void tryBuildRespectfulTree(Tree tree, Node currentNode, List<Tree> trees)
-    {
-        if (currentNode.isLeaf())
-        {
-            Tree leftTree = tree.copy();
-            Node newNode = leftTree.getEqualsNode(leftTree.getRoot(), currentNode);
-            newNode.setSon(new Node(newNode, null, null, 1));
-            newNode.setDaughter(new Node(newNode, null, null, 1));
-            newNode.getSon().setParent(newNode);
-            newNode.getDaughter().setParent(newNode);
-            newNode.incrementLeafCount(newNode);
-            leftTree.incrementNodeCount(2);
-            leftTree.setRespectful(isRespectfulTree(leftTree, newNode));
-            trees.add(leftTree);
-
-        }
-        else
-        {
-            tryBuildRespectfulTree(tree, currentNode.getSon(), trees);
-            tryBuildRespectfulTree(tree, currentNode.getDaughter(), trees);
-        }
-
     }
 
     private static boolean isRespectfulTree(Tree tree, Node currentNode)
@@ -78,9 +70,10 @@ public class Main
     {
         for (int i : trees.keySet())
         {
+            int j = 0;
             for (Tree tree : trees.get(i))
             {
-                OutputStream os = new FileOutputStream(String.format("in%s.txt", i));
+                OutputStream os = new FileOutputStream(String.format("in%s%s.txt", i, j++));
                 writeTitle(os);
                 String treeLine = "\\" + Node.writeNode(tree.getRoot()) + ";";
                 os.write(treeLine.getBytes(), 0, treeLine.length());

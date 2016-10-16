@@ -1,8 +1,12 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Tree
 {
     private int nodeCount;
     private Node root;
     private boolean isRespectful;
+    private List<Node> leafs = new ArrayList<>();
 
 
     public Tree()
@@ -24,7 +28,9 @@ public class Tree
 
     public Tree copy()
     {
-        Tree tree = new Tree(nodeCount, root.copy());
+        Tree tree = new Tree();
+        tree.setNodeCount(nodeCount);
+        tree.setRoot(root.copy(tree));
         setParent(tree.root, tree.root.getSon());
         setParent(tree.root, tree.root.getDaughter());
         return tree;
@@ -78,14 +84,27 @@ public class Tree
         isRespectful = respectful;
     }
 
+    public List<Node> getLeafs()
+    {
+        return leafs;
+    }
+
+    public void setLeafs(List<Node> leafs)
+    {
+        this.leafs = leafs;
+    }
+
     //endregion
 
     public Node getEqualsNode(Node node, Node referenceNode)
     {
         if (!node.equals(referenceNode))
         {
-            getEqualsNode(node.getSon(), referenceNode);
-            getEqualsNode(node.getDaughter(), referenceNode);
+            if (node.getSon() != null)
+                node = getEqualsNode(node.getSon(), referenceNode);
+            if(node == null || node.getDaughter() != null)
+                node = getEqualsNode(node.getDaughter(), referenceNode);
+
         }
         return node;
     }

@@ -91,18 +91,20 @@ public class Node
         return daughter != null;
     }
 
-    public Node copy()
+    public Node copy(Tree tree)
     {
         Node daughter = null;
         Node son = null;
-        Node parent = null;
         if (this.son != null) {
-            son = this.son.copy();
+            son = this.son.copy(tree);
         }
+
         if (this.daughter != null) {
-            daughter = this.daughter.copy();
+            daughter = this.daughter.copy(tree);
         }
-        return new Node(parent, son, daughter, leafCount);
+        Node node = new Node(null, son, daughter, leafCount);
+        tree.getLeafs().add(node);
+        return node;
     }
 
     public boolean hasBrother()
@@ -120,18 +122,18 @@ public class Node
         return parent != null;
     }
 
-    public boolean equals(Node node)
-    {
-
-        return this.leafCount == node.getLeafCount() &&
-                (!hasSon() && !node.hasSon() || this.son.equals(node.getSon())) &&
-                (!hasDaughter() && !node.hasDaughter() || this.daughter.equals(node.getDaughter()));
-    }
-
-    public int hashCode(Node node)
-    {
-        return node.getParent().hashCode() + node.getSon().hashCode() + node.getDaughter().hashCode();
-    }
+//    public boolean equals(Node node)
+//    {
+//
+//        return this.leafCount == node.getLeafCount() &&
+//                (!hasSon() && !node.hasSon() || this.son.equals(node.getSon())) &&
+//                (!hasDaughter() && !node.hasDaughter() || this.daughter.equals(node.getDaughter()));
+//    }
+//
+//    public int hashCode(Node node)
+//    {
+//        return node.getParent().hashCode() + node.getSon().hashCode() + node.getDaughter().hashCode();
+//    }
 
     public void incrementLeafCount()
     {
