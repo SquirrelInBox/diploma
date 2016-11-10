@@ -7,7 +7,8 @@ public class Main
 {
     public static void main(String[] args) throws IOException
     {
-        Map<Integer, List<Tree>> trees = generateTrees(4);
+        Map<Integer, List<Tree>> trees = generateTrees(10);
+        trees.keySet().forEach(i ->System.out.println(String.format("%s: %s", i, trees.get(i).size())));
         System.out.println(trees);
         saveTrees(trees);
     }
@@ -29,20 +30,12 @@ public class Main
                 List<Node> leafs = tree.getLeafs();
                 for (int k = 0; k < leafs.size(); k++)
                 {
-                    Tree currentTree = tree.copy();
-                    Node node = currentTree.getLeafs().get(k);
-//                    Node node = currentTree.getEqualsNode(currentTree.getRoot(), leaf);
-                    currentTree.getLeafs().remove(node);
+                    Tree currentTree = Tree.createFrom(tree, k);
 
-                    node.setSon(new Node(node, null, null, 1));
-                    node.setDaughter(new Node(node, null, null, 1));
-                    node.getSon().setParent(node);
-                    node.getDaughter().setParent(node);
-                    node.incrementLeafCount(node);
-                    currentTree.incrementNodeCount(1);
-                    currentTree.setRespectful(isRespectfulTree(currentTree, node));
-                    currentTree.getLeafs().addAll(
-                            Arrays.asList(node.getSon(), node.getDaughter()));
+                    if (!currentTree.isRespectful() || isDouble(currentTree, resultTrees))
+                    {
+                        continue;
+                    }
                     resultTrees.add(currentTree);
                 }
             }
@@ -53,15 +46,15 @@ public class Main
         return trees;
     }
 
-    private static boolean isRespectfulTree(Tree tree, Node currentNode)
+    private static boolean isDouble(Tree tree, List<Tree> trees)
     {
-
-        //todo finish it
-        if (!currentNode.hasDaughter() && !currentNode.hasSon())
+        for (Tree tempTree : trees)
         {
-            return false;
+            if (tempTree.equivalentTrees(tree))
+            {
+                return true;
+            }
         }
-
 
         return false;
     }

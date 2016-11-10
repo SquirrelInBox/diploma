@@ -103,7 +103,10 @@ public class Node
             daughter = this.daughter.copy(tree);
         }
         Node node = new Node(null, son, daughter, leafCount);
-        tree.getLeafs().add(node);
+        if (son == null && daughter == null)
+        {
+            tree.getLeafs().add(node);
+        }
         return node;
     }
 
@@ -147,6 +150,11 @@ public class Node
             node.incrementLeafCount();
             node = node.getParent();
         }
+    }
+
+    public boolean isMan()
+    {
+        return parent.getSon() == this;
     }
 
     public static String writeNode(Node node) throws IOException

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Tree
@@ -7,7 +8,6 @@ public class Tree
     private Node root;
     private boolean isRespectful;
     private List<Node> leafs = new ArrayList<>();
-
 
     public Tree()
     {
@@ -24,6 +24,49 @@ public class Tree
         this.nodeCount = nodeCount;
         this.root = root;
         this.isRespectful = isRespectful;
+    }
+
+    public static Tree createFrom(Tree tree, int leafIndex)
+    {
+        Tree currentTree = tree.copy();
+        Node node = currentTree.getLeafs().get(leafIndex);
+        currentTree.getLeafs().remove(node);
+
+        node.setSon(new Node(node, null, null, 1));
+        node.setDaughter(new Node(node, null, null, 1));
+        node.getSon().setParent(node);
+        node.getDaughter().setParent(node);
+        node.incrementLeafCount(node);
+        currentTree.incrementNodeCount(1);
+        currentTree.getLeafs().addAll(
+                Arrays.asList(node.getSon(), node.getDaughter()));
+        setRespectfulInTree(currentTree);
+
+        return currentTree;
+    }
+
+    private static void setRespectfulInTree(Tree tree)
+    {
+        tree.setRespectful(true);
+        for (Node node : tree.leafs)
+        {
+            if (!isRespectfulInNode(node) || !isRespectfulInNode(node.getParent()))
+            {
+                tree.setRespectful(false);
+                break;
+            }
+        }
+    }
+
+    private static boolean isRespectfulInNode(Node node)
+    {
+        if (node == null || node.getParent() == null)
+        {
+            return true;
+        }
+
+        Node nephew = node.isMan() ? node.getParent().getDaughter().getSon() : node.getParent().getSon().getDaughter();
+        return contains(node,nephew);
     }
 
     public Tree copy()
@@ -135,4 +178,29 @@ public class Tree
             daughter = daughter.getDaughter();
         }
     }
+
+    public boolean equivalentTrees(Tree tree)
+    {
+        return tree != null && equivalentNode(root, tree.getRoot());
+    }
+
+    private boolean equivalentNode(Node first, Node second)
+    {
+        if (first == null && second == null)
+        {
+            return true;
+        }
+        return first !=null && second != null &&
+                equivalentNode(first.getSon(), second.getSon()) &&
+                equivalentNode(first.getDaughter(), second.getDaughter());
+    }
+
+    private static boolean contains(Node uncle, Node nephew)
+    {
+        return nephew == null ||
+                uncle != null &&
+                        contains(uncle.getSon(), nephew.getSon()) &&
+                        contains(uncle.getDaughter(), nephew.getDaughter());
+    }
+
 }
