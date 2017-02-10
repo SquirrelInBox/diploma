@@ -6,14 +6,12 @@ public class Node
     private Node parent;
     private Node son;
     private Node daughter;
-    private int leafCount;
 
-    public Node(Node parent, Node son, Node daughter, int listCount)
+    public Node(Node parent, Node son, Node daughter)
     {
         this.parent = parent;
         this.son = son;
         this.daughter = daughter;
-        this.leafCount = listCount;
     }
 
 
@@ -47,16 +45,6 @@ public class Node
     public void setSon(Node son)
     {
         this.son = son;
-    }
-
-    public int getLeafCount()
-    {
-        return leafCount;
-    }
-
-    public void setLeafCount(int leafCount)
-    {
-        this.leafCount = leafCount;
     }
 
     public String getName()
@@ -102,12 +90,7 @@ public class Node
         if (this.daughter != null) {
             daughter = this.daughter.copy(tree);
         }
-        Node node = new Node(null, son, daughter, leafCount);
-        if (son == null && daughter == null)
-        {
-            tree.getLeafs().add(node);
-        }
-        return node;
+        return new Node(null, son, daughter);
     }
 
     public boolean hasBrother()
@@ -125,31 +108,15 @@ public class Node
         return parent != null;
     }
 
-//    public boolean equals(Node node)
-//    {
-//
-//        return this.leafCount == node.getLeafCount() &&
-//                (!hasSon() && !node.hasSon() || this.son.equals(node.getSon())) &&
-//                (!hasDaughter() && !node.hasDaughter() || this.daughter.equals(node.getDaughter()));
-//    }
-//
-//    public int hashCode(Node node)
-//    {
-//        return node.getParent().hashCode() + node.getSon().hashCode() + node.getDaughter().hashCode();
-//    }
-
-    public void incrementLeafCount()
+    public boolean equals(Node node)
     {
-        leafCount++;
+        return (!hasSon() && !node.hasSon() || this.son.equals(node.getSon())) &&
+                (!hasDaughter() && !node.hasDaughter() || this.daughter.equals(node.getDaughter()));
     }
 
-    public void incrementLeafCount(Node node)
+    public int hashCode(Node node)
     {
-        while (node != null)
-        {
-            node.incrementLeafCount();
-            node = node.getParent();
-        }
+        return node.getParent().hashCode() + node.getSon().hashCode() + node.getDaughter().hashCode();
     }
 
     public boolean isMan()

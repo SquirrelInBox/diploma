@@ -9,7 +9,6 @@ public class Main
     {
         Map<Integer, List<Tree>> trees = generateTrees(10);
         trees.keySet().forEach(i ->System.out.println(String.format("%s: %s", i, trees.get(i).size())));
-        System.out.println(trees);
         saveTrees(trees);
     }
 
@@ -17,33 +16,71 @@ public class Main
     {
         Map<Integer, List<Tree>> trees = new HashMap<>();
 
-        Tree previousRoot = new Tree(1, new Node(null, null, null, 1), true);
-        previousRoot.getLeafs().add(previousRoot.getRoot());
+        Tree previousRoot = new Tree(new Node(null, null, null), true);
         trees.put(1, Collections.singletonList(previousRoot));
 
-        for (int i = 1; i < listCount; i++)
-        {
-            List<Tree> currentTrees = trees.get(i);
-            List<Tree> resultTrees = new ArrayList<>();
-            for (Tree tree : currentTrees)
-            {
-                List<Node> leafs = tree.getLeafs();
-                for (int k = 0; k < leafs.size(); k++)
-                {
-                    Tree currentTree = Tree.createFrom(tree, k);
+        Node parent = new Node(null, null, null);
+        Node son = new Node(parent, null, null);
+        Node daughter = new Node(parent, null, null);
+        parent.setSon(son);
+        parent.setDaughter(daughter);
 
-                    if (!currentTree.isRespectful() || isDouble(currentTree, resultTrees))
+        Tree doubleTree = new Tree(parent, true);
+
+        trees.put(2, Collections.singletonList(doubleTree));
+
+        int leafs = 3;
+
+        for (int k = 2; k < listCount; k++)
+        {
+            List<Tree> resultTrees = new ArrayList<>();
+            int size = trees.size();
+            System.out.println(String.format("%s:", k+1));
+            for (int i = 0; i < size / 2 + 1; i++)
+            {
+                for (Tree leftTree : trees.get(i + 1))
+                {
+                    for (Tree rightTree : trees.get(size - i))
                     {
-                        continue;
+                        Tree newLeftTree = createNewTree(leftTree, rightTree);
+
+                        if (newLeftTree.isRespectful() && !isDouble(newLeftTree, resultTrees))
+                        {
+                            resultTrees.add(newLeftTree);
+                            System.out.println(String.format("  %s + %s", i + 1, size - i));
+                        }
+
+                        Tree newRightTree = createNewTree(rightTree, leftTree);
+                        if (newRightTree.isRespectful() && !isDouble(newRightTree, resultTrees))
+                        {
+                            resultTrees.add(newRightTree);
+                            System.out.println(String.format("  %s + %s", size - i, i + 1));
+                        }
+
                     }
-                    resultTrees.add(currentTree);
                 }
             }
-            trees.put(i + 1, resultTrees);
+            trees.put(leafs++, resultTrees);
         }
 
-
         return trees;
+    }
+
+    private static Tree createNewTree(Tree leftTree, Tree rightTree)
+    {
+        Tree copyLeftTree = leftTree.copy();
+        Tree copyRightTree = rightTree.copy();
+        Node newNode = new Node(null, copyLeftTree.getRoot(), copyRightTree.getRoot());
+        copyLeftTree.getRoot().setParent(newNode);
+        copyRightTree.getRoot().setParent(newNode);
+        copyLeftTree.setRoot(newNode);
+        copyRightTree.setRoot(newNode);
+
+        Tree newTree = new Tree();
+        newTree.setRoot(newNode);
+        Tree.setRespectfulInTree(newTree);
+
+        return newTree;
     }
 
     private static boolean isDouble(Tree tree, List<Tree> trees)
@@ -66,7 +103,7 @@ public class Main
             int j = 0;
             for (Tree tree : trees.get(i))
             {
-                OutputStream os = new FileOutputStream(String.format("in%s%s.txt", i, j++));
+                OutputStream os = new FileOutputStream(String.format("in%s%s.tex", i, j++));
                 writeTitle(os);
                 String treeLine = "\\" + Node.writeNode(tree.getRoot()) + ";";
                 os.write(treeLine.getBytes(), 0, treeLine.length());
