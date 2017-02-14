@@ -5,6 +5,7 @@ import java.util.*;
 
 public class Main
 {
+    static int LEVEL_COUNT = 1;
     public static void main(String[] args) throws IOException
     {
         Map<Integer, List<Tree>> trees = generateTrees(10);
@@ -47,14 +48,14 @@ public class Main
                         if (newLeftTree.isRespectful() && !isDouble(newLeftTree, resultTrees))
                         {
                             resultTrees.add(newLeftTree);
-                            System.out.println(String.format("  %s + %s", i + 1, size - i));
+//                            System.out.println(String.format("  %s + %s", i + 1, size - i));
                         }
 
                         Tree newRightTree = createNewTree(rightTree, leftTree);
                         if (newRightTree.isRespectful() && !isDouble(newRightTree, resultTrees))
                         {
                             resultTrees.add(newRightTree);
-                            System.out.println(String.format("  %s + %s", size - i, i + 1));
+//                            System.out.println(String.format("  %s + %s", size - i, i + 1));
                         }
 
                     }
@@ -100,15 +101,17 @@ public class Main
     {
         for (int i : trees.keySet())
         {
-            int j = 0;
+            OutputStream os = new FileOutputStream(String.format("in%s.tex", i));
+            writeTitle(os);
+            LEVEL_COUNT = (int) StrictMath.round(Math.log(i)/Math.log(2));
             for (Tree tree : trees.get(i))
             {
-                OutputStream os = new FileOutputStream(String.format("in%s%s.tex", i, j++));
-                writeTitle(os);
+                writeSubTitle(os);
                 String treeLine = "\\" + Node.writeNode(tree.getRoot()) + ";";
                 os.write(treeLine.getBytes(), 0, treeLine.length());
-                writeFinish(os);
+                writeSubFinish(os);
             }
+            writeFinish(os);
         }
     }
 
@@ -117,16 +120,31 @@ public class Main
         String title =
                 "\\documentclass{article}\n" +
                 "\\usepackage{tikz}\n" +
-                "\\begin{document}\n" +
-                "\\begin{tikzpicture}\n";
+                "\\begin{document}\n";
         os.write(title.getBytes(), 0, title.length());
+    }
+
+    public static void writeSubTitle(OutputStream os) throws IOException
+    {
+        String title = "\\begin{tikzpicture}\n\\tikzstyle{solid node}=[circle,draw,inner sep=1.5,fill=black]\n";
+        double distance = 0.3;
+        for (int i = LEVEL_COUNT; i >= 1; i--)
+        {
+            title += "\\tikzstyle{level "+i+"}=[level distance=5mm,sibling distance="+distance+"cm]\n";
+            distance *= 2;
+        }
+        os.write(title.getBytes(), 0, title.length());
+    }
+
+    public static void writeSubFinish(OutputStream os) throws IOException
+    {
+        String end = "\n\\end{tikzpicture}\n";
+        os.write(end.getBytes(), 0, end.length());
     }
 
     public static void writeFinish(OutputStream os) throws IOException
     {
-        String end =
-                "\n\\end{tikzpicture}\n" +
-                "\\end{document}\n";
+        String end = "\\end{document}\n";
         os.write(end.getBytes(), 0, end.length());
     }
 }

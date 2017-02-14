@@ -127,9 +127,9 @@ public class Node
     public static String writeNode(Node node) throws IOException
     {
         return String.format(
-                "node[circle, draw]{%s}\n" +
+                "node[solid node]{}\n" +
                 "child%s\n" +
-                "child%s\n", node.getName(),
+                "child%s\n",
                 node.getSon() == null ? "[missing]{}" : "{" + writeNode(node.getSon()) + "}",
                 node.getDaughter() == null ? "[missing]{}" : "{" + writeNode(node.getDaughter()) + "}");
 
