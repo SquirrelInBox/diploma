@@ -6,11 +6,19 @@ import java.util.*;
 public class Main
 {
     static int LEVEL_COUNT = 1;
+    static List<String> statistics = new ArrayList<>();
+
     public static void main(String[] args) throws IOException
     {
         Map<Integer, List<Tree>> trees = generateTrees(10);
         trees.keySet().forEach(i ->System.out.println(String.format("%s: %s", i, trees.get(i).size())));
+        saveStatistics();
         saveTrees(trees);
+    }
+
+    private static void saveStatistics()
+    {
+
     }
 
     private static Map<Integer, List<Tree>> generateTrees(int listCount)
@@ -36,9 +44,13 @@ public class Main
         {
             List<Tree> resultTrees = new ArrayList<>();
             int size = trees.size();
-            System.out.println(String.format("%s:", k+1));
-            for (int i = 0; i < size / 2 + 1; i++)
+            int count = (int) Math.ceil(size / 2.0);
+
+            for (int i = 0; i < count; i++)
             {
+                int treeCount = 0;
+                int leftRightTreeCount = 0;
+                int rightLeftTreeCount = 0;
                 for (Tree leftTree : trees.get(i + 1))
                 {
                     for (Tree rightTree : trees.get(size - i))
@@ -48,18 +60,27 @@ public class Main
                         if (newLeftTree.isRespectful() && !isDouble(newLeftTree, resultTrees))
                         {
                             resultTrees.add(newLeftTree);
-//                            System.out.println(String.format("  %s + %s", i + 1, size - i));
+                            treeCount ++;
+                            leftRightTreeCount ++;
                         }
 
                         Tree newRightTree = createNewTree(rightTree, leftTree);
                         if (newRightTree.isRespectful() && !isDouble(newRightTree, resultTrees))
                         {
                             resultTrees.add(newRightTree);
-//                            System.out.println(String.format("  %s + %s", size - i, i + 1));
+                            treeCount++;
+                            rightLeftTreeCount ++;
                         }
 
                     }
                 }
+//                String tempStat = String.format("%s-%s: %s, %s", i + 1, size - i, leftRightTreeCount, rightLeftTreeCount);
+//                statistics.add(tempStat);
+
+//                if (i + 1 == 2)
+//                {
+//                    System.out.println(String.format("%s: %s", leafs, treeCount));
+//                }
             }
             trees.put(leafs++, resultTrees);
         }
