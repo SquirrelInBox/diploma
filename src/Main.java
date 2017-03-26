@@ -1,3 +1,5 @@
+import javafx.util.Pair;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -6,24 +8,28 @@ import java.util.*;
 public class Main
 {
     static int LEVEL_COUNT = 1;
-    static List<String> statistics = new ArrayList<>();
 
     public static void main(String[] args) throws IOException
     {
-        Map<Integer, List<Tree>> trees = generateTrees(10);
-        trees.keySet().forEach(i ->System.out.println(String.format("%s: %s", i, trees.get(i).size())));
-        saveStatistics();
+        Pair<Map<Integer, List<Tree>>,Map<Integer, List<Tree>>> allTrees = generateTrees(10);
+        Map<Integer, List<Tree>> trees = allTrees.getKey();
+        Map<Integer, List<Tree>> badTrees = allTrees.getValue();
+//        trees.keySet().forEach(i ->System.out.println(String.format("%s: %s", i, trees.get(i).size())));
+//        trees.keySet().forEach(i ->System.out.println(String.format("%s: %s", i, getSize(trees, badTrees, i))));
+        badTrees.keySet().forEach(i ->System.out.println(String.format("%s: %s", i, badTrees.get(i).size())));
         saveTrees(trees);
     }
 
-    private static void saveStatistics()
+    private static int getSize(Map<Integer, List<Tree>> goodTrees, Map<Integer, List<Tree>> badTrees, int leafCount)
     {
-
+        int badTreesCount = badTrees.get(leafCount) == null ? 0 : badTrees.get(leafCount).size();
+        return goodTrees.get(leafCount).size() + badTreesCount;
     }
 
-    private static Map<Integer, List<Tree>> generateTrees(int listCount)
+    private static Pair<Map<Integer, List<Tree>>, Map<Integer, List<Tree>>> generateTrees(int listCount)
     {
         Map<Integer, List<Tree>> trees = new HashMap<>();
+        Map<Integer, List<Tree>> badTrees = new HashMap<>();
 
         Tree previousRoot = new Tree(new Node(null, null, null), true);
         trees.put(1, Collections.singletonList(previousRoot));
@@ -43,49 +49,52 @@ public class Main
         for (int k = 2; k < listCount; k++)
         {
             List<Tree> resultTrees = new ArrayList<>();
+            List<Tree> resultBadTrees = new ArrayList<>();
             int size = trees.size();
             int count = (int) Math.ceil(size / 2.0);
 
             for (int i = 0; i < count; i++)
             {
-                int treeCount = 0;
-                int leftRightTreeCount = 0;
-                int rightLeftTreeCount = 0;
                 for (Tree leftTree : trees.get(i + 1))
                 {
                     for (Tree rightTree : trees.get(size - i))
                     {
                         Tree newLeftTree = createNewTree(leftTree, rightTree);
 
-                        if (newLeftTree.isRespectful() && !isDouble(newLeftTree, resultTrees))
+                        if (newLeftTree.isRespectful())
                         {
-                            resultTrees.add(newLeftTree);
-                            treeCount ++;
-                            leftRightTreeCount ++;
+                            if (!isDouble(newLeftTree, resultTrees))
+                            {
+                                resultTrees.add(newLeftTree);
+                            }
                         }
+                        else if (isDouble(newLeftTree, resultTrees))
+                        {
+                            resultBadTrees.add(newLeftTree);
+                        }
+
 
                         Tree newRightTree = createNewTree(rightTree, leftTree);
-                        if (newRightTree.isRespectful() && !isDouble(newRightTree, resultTrees))
-                        {
-                            resultTrees.add(newRightTree);
-                            treeCount++;
-                            rightLeftTreeCount ++;
-                        }
 
+                        if (newRightTree.isRespectful())
+                        {
+                            if (!isDouble(newRightTree, resultTrees))
+                            {
+                                resultTrees.add(newRightTree);
+                            }
+                        }
+                        else if (isDouble(newRightTree, resultTrees))
+                        {
+                            resultBadTrees.add(newRightTree);
+                        }
                     }
                 }
-//                String tempStat = String.format("%s-%s: %s, %s", i + 1, size - i, leftRightTreeCount, rightLeftTreeCount);
-//                statistics.add(tempStat);
-
-//                if (i + 1 == 2)
-//                {
-//                    System.out.println(String.format("%s: %s", leafs, treeCount));
-//                }
             }
+            badTrees.put(leafs, resultBadTrees);
             trees.put(leafs++, resultTrees);
         }
 
-        return trees;
+        return new Pair<>(trees, badTrees);
     }
 
     private static Tree createNewTree(Tree leftTree, Tree rightTree)
